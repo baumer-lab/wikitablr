@@ -1,6 +1,8 @@
 #site to use for testing
 url <- "https://en.wikipedia.org/wiki/List_of_colleges_and_universities_in_Massachusetts"
 
+expect_is(read_wikinodes(url), "list")
+
 #test for read_wiki_raw()
 #test that output is a dataframe
 expect_equal(class(read_wiki_raw(url)), "data.frame")

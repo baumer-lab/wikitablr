@@ -1,3 +1,41 @@
+#' @name clean_wikitable
+#' @title clean_wikitable
+#' @importFrom dplyr %>%
+#' @param table_num the number of the single tbl you want to clean
+#' @param ... passes arguments to read_wikitables()
+#' @return A single tbl
+#' @examples
+#'
+#' @export
+clean_wikitable <- function(wiki_tables, ...) {
+  #removes footnotes
+  clean_footnotes(wiki_tables)
+  #cleans names of variables
+  clean_wiki_names(wiki_tables)
+
+  convert_types(wiki_tables)
+
+  return(wiki_tables)
+
+}
+
+
+
+#' @name clean_footnotes
+#' @title clean_footnotes
+#' @importFrom dplyr %>%
+#' @param wiki_table A dataframe from which the footnotes names will be removed
+#' @param ... passes arguments to stringr::str_remove_all()
+#' @return Cleaned dataframe
+#' @export
+clean_footnotes <- function(wikitables, ...) {
+  # remove footnotes (which are in brackets) from column names
+  names(wiki_tables) <- stringr::str_remove_all(names(wiki_tables), "\\[.*]")
+}
+
+
+
+
 #' @name clean_wiki_names
 #' @title clean_wiki_names
 #' @importFrom dplyr %>%
@@ -6,20 +44,18 @@
 #' @return Cleaned dataframe
 #' @export
 
-clean_wiki_names <- function(wiki_table, ...) {
-  #removes all columns without a name
-  wiki_table <- wiki_table[!is.na(names(wiki_table))]
-
-  # remove footnotes (which are in brackets) from column names
-  names(wiki_table) <- stringr::str_remove_all(names(wiki_table), "\\[.*]")
+clean_wiki_names <- function(wiki_tables, ...) {
+  # removes all columns without a name
+  wiki_tables <- wiki_table[!is.na(names(wiki_tables))]
   # remove "(s)" from column names
-  names(wiki_table) <- stringr::str_remove_all(names(wiki_table), "\\(s\\)")
+  names(wiki_tables) <- stringr::str_remove_all(names(wiki_tables), "\\(s\\)")
   # remove special characters from column names
-  names(wiki_table) <- stringr::str_replace_all(names(wiki_table), "[^a-zA-Z0-9 ]", "_")
+  names(wiki_tables) <- stringr::str_replace_all(names(wiki_tables), "[^a-zA-Z0-9 ]", "_")
   # convert to snake case
-  wiki_table <- wiki_table %>% janitor::clean_names(...)
+  wiki_tables <- wiki_tables %>%
+    janitor::clean_names(...)
 
-  return(wiki_table)
+  return(wiki_tables)
 }
 
 
@@ -31,14 +67,14 @@ clean_wiki_names <- function(wiki_table, ...) {
 #' @return Cleaned dataframe
 #' @export
 
-add_na <- function(wiki_table, to_na = "", special_to_na = TRUE){
+add_na <- function(wiki_tables, to_na = "", special_to_na = TRUE){
   #converts specified characters to NA
-  wiki_table <- as.data.frame(map(wiki_table, function(x){is.na(x) <- which(x %in% c("", to_na));x}))
+  wiki_tables <- as.data.frame(map(wiki_tables, function(x){is.na(x) <- which(x %in% c("", to_na));x}))
 
   if(special_to_na){
     #converts solitary special characters to NA
-    wiki_table <- as.data.frame(
-      map(wiki_table, function(x) {
+    wiki_tables <- as.data.frame(
+      map(wiki_tables, function(x) {
         is.na(x) <- which(stringr::str_detect(x, "\\A[^a-zA-Z0-9]{1}$"))
         x
         }
@@ -46,7 +82,7 @@ add_na <- function(wiki_table, to_na = "", special_to_na = TRUE){
     )
   }
 
-  return(wiki_table)
+  return(wiki_tables)
 }
 
 
@@ -72,26 +108,26 @@ remove_footnotes <- function(wiki_table, ...){
 #' @return Cleaned dataframe
 #' @export
 
-clean_rows <- function(wiki_table){
+clean_rows <- function(wiki_tables){
   #removes all columns without a name
-  wiki_table <- wiki_table[!is.na(names(wiki_table))]
+  wiki_tables <- wiki_tablea[!is.na(names(wiki_tables))]
 
   #removes rows with the same value across all columns
   #line of code pulled from Psidom's stack overflow answer here:
   #https://stackoverflow.com/questions/44398252/remove-rows-with-the-same-value-across-all-columns
-  wiki_table <- wiki_table[rowSums(wiki_table[-1] != wiki_table[[2]], na.rm = TRUE) != 0,]
+  wiki_tables <- wiki_tables[rowSums(wiki_table[-1] != wiki_tables[[2]], na.rm = TRUE) != 0,]
 
-  wiki_table <- wiki_table %>%
+  wiki_tables <- wiki_tables %>%
     dplyr::mutate_all(as.character)
 
     tryCatch({i <- 1
 
-    while(i <= nrow(wiki_table)){
+    while(i <= nrow(wiki_tables)){
 
       #remove repeats of header in rows
       suppressWarnings(
-        if(colnames(wiki_table) == wiki_table[i,]){
-          wiki_table <- wiki_table[-c(i),]
+        if(colnames(wiki_tables) == wiki_tables[i,]){
+          wiki_table <- wiki_tables[-c(i),]
           i <- i-1
         }
       )
@@ -110,9 +146,9 @@ clean_rows <- function(wiki_table){
 #' @return Cleaned dataframe
 #' @export
 
-convert_types <- function(wiki_table){
+convert_types <- function(wiki_tables){
   suppressWarnings(
-    wiki_table <- wiki_table %>%
+    wiki_tables <- wiki_tables %>%
       dplyr::mutate_all(as.character)%>%
       dplyr::mutate_if(~all(!is.na(lubridate::dmy(.x))), lubridate::dmy)%>%
       dplyr::mutate_if(~all(!is.na(lubridate::mdy(.x))), lubridate::mdy)%>%
@@ -120,6 +156,6 @@ convert_types <- function(wiki_table){
       dplyr::mutate_if(~class(.x) == "character" &&
                          all(!stringr::str_detect(.x, "[a-zA-Z]"), na.rm = TRUE), readr::parse_number))
 
-  return(wiki_table)
+  return(wiki_tables)
 
 }

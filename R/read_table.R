@@ -20,10 +20,10 @@ read_wikinodes <- function(url, replace_linebreak = ", ", ...) {
   # replace line breaks in cells with comma
   comma <- rvest::xml_node(xml2::read_xml(paste("<wiki_table><span>", "</span></wiki_table>", sep = replace_linebreak)),
                            "span")
-  xml2::xml_add_sibling(rvest::xml_nodes(wiki_table, "br"), comma)
+  xml2::xml_add_sibling(rvest::xml_nodes(wiki_nodes, "br"), comma)
 
   # extract table from html
-  wiki_nodes <- wiki_nodes %>%
+  wiki_nodes %>%
     rvest::html_nodes("table.wikitable")
 
 }
@@ -32,6 +32,7 @@ read_wikinodes <- function(url, replace_linebreak = ", ", ...) {
 #' @name read_wikitables
 #' @title read_wikitables
 #' @importFrom dplyr %>%
+#' @importFrom purrr map
 #' @param url A character vector of the url of a wikipedia page containing a table. Default is 1.
 #' @param ... passes arguments from read_wikinodes
 #' @return list of tbls
@@ -39,15 +40,20 @@ read_wikinodes <- function(url, replace_linebreak = ", ", ...) {
 #'
 #' @export
 
-read_wikitables <- function(url, ...) {
-  wiki_table <- read_wikinodes(url) %>%
+read_wikitables <- function(url, clean = FALSE, ...) {
+  wiki_tables <- read_wikinodes(url, ...) %>%
     rvest::html_table(fill = TRUE)
 
-  return(wiki_table)
-
+  if (clean) {
+    map(wiki_tables, clean_wikitable)
+  } else {
+    wiki_tables
+  }
 }
 
 
+
+####?????
 read_tables <- function(url, ...) {
 
 }

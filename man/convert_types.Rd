@@ -4,7 +4,7 @@
 \alias{convert_types}
 \title{convert_types}
 \usage{
-convert_types(wiki_table)
+convert_types(wiki_tables)
 }
 \arguments{
 \item{wiki_table}{A dataframe for which the rows will be cleaned}

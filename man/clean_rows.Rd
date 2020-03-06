@@ -4,7 +4,7 @@
 \alias{clean_rows}
 \title{clean_rows}
 \usage{
-clean_rows(wiki_table)
+clean_rows(wiki_tables)
 }
 \arguments{
 \item{wiki_table}{A dataframe for which the rows will be cleaned}

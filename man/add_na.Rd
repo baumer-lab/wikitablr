@@ -4,14 +4,14 @@
 \alias{add_na}
 \title{add_na}
 \usage{
-add_na(wiki_table, to_na = "", special_to_na = TRUE)
+add_na(wiki_tables, to_na = "", special_to_na = TRUE)
 }
 \arguments{
-\item{wiki_table}{A dataframe}
-
 \item{to_na}{A character string that when solitary in a dataframe cell is to be converted to NA. Default is "".}
 
 \item{special_to_na}{A boolean denoting whether solitary special characters in dataframe cells are to be converted to NA. Default is TRUE.}
+
+\item{wiki_table}{A dataframe}
 }
 \value{
 Cleaned dataframe
